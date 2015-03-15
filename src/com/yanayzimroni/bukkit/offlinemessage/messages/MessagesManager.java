@@ -27,4 +27,6 @@ public interface MessagesManager {
 	void resetMessages(OfflinePlayer player);
 	
 	String getType();
+	
+	boolean isAsync();
 }

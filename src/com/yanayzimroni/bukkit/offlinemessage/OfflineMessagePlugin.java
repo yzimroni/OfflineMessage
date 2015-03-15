@@ -20,6 +20,7 @@ import com.yanayzimroni.bukkit.offlinemessage.messages.MySqlMessagesManager;
 
 public class OfflineMessagePlugin extends JavaPlugin implements Listener {
 	private static MessagesManager messagesmanager;
+	public static OfflineMessagePlugin plugin;
 
 	@Override
 	public void onEnable() {
@@ -38,6 +39,7 @@ public class OfflineMessagePlugin extends JavaPlugin implements Listener {
 				break;
 			}
 		}
+		plugin = this;
 	}
 
 	@Override
@@ -65,17 +67,27 @@ public class OfflineMessagePlugin extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-	public void onPlayerJoin(PlayerJoinEvent e) {
+	public void onPlayerJoin(final PlayerJoinEvent e) {
 		if (!e.getPlayer().isOnline()) return;
-		List<String> messages = getMessagesManager().getMessages(e.getPlayer());
-		if (messages != null && !messages.isEmpty()) {
-			for (String message : messages) {
-				String formattedmessage = message;
-				formattedmessage = ChatColor.translateAlternateColorCodes('&', formattedmessage);
-				formattedmessage = formattedmessage.replaceAll("%player%", e.getPlayer().getName());
-				e.getPlayer().sendMessage(formattedmessage);
+		Runnable message_task = new Runnable() {
+			@Override
+			public void run() {
+				List<String> messages = getMessagesManager().getMessages(e.getPlayer());
+				if (messages != null && !messages.isEmpty()) {
+					for (String message : messages) {
+						String formattedmessage = message;
+						formattedmessage = ChatColor.translateAlternateColorCodes('&', formattedmessage);
+						formattedmessage = formattedmessage.replaceAll("%player%", e.getPlayer().getName());
+						e.getPlayer().sendMessage(formattedmessage);
+					}
+					getMessagesManager().resetMessages(e.getPlayer());
+				}
 			}
-			getMessagesManager().resetMessages(e.getPlayer());
+		};
+		if (getMessagesManager().isAsync()) {
+			Bukkit.getScheduler().runTaskAsynchronously(this, message_task);
+		} else {
+			Bukkit.getScheduler().runTask(this, message_task);
 		}
 	}
 	

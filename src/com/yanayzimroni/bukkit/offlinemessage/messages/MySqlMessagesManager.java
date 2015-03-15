@@ -13,7 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+
+import com.yanayzimroni.bukkit.offlinemessage.OfflineMessagePlugin;
 
 
 public class MySqlMessagesManager implements MessagesManager {
@@ -34,15 +37,21 @@ public class MySqlMessagesManager implements MessagesManager {
 	}
 	
 	@Override
-	public void sendMessage(UUID uuid, String message) {
-		try {
-			PreparedStatement pre = conn.prepareStatement("INSERT INTO " + getPrefix() + "offlinemessage (Player, Message) VALUES (?, ?);");
-			pre.setString(1, uuid.toString());
-			pre.setString(2, message);
-			pre.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public void sendMessage(final UUID uuid, final String message) {
+		Bukkit.getScheduler().runTaskAsynchronously(OfflineMessagePlugin.plugin, new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					PreparedStatement pre = conn.prepareStatement("INSERT INTO " + getPrefix() + "offlinemessage (Player, Message) VALUES (?, ?);");
+					pre.setString(1, uuid.toString());
+					pre.setString(2, message);
+					pre.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}				
+			}
+		});
 	}
 
 	@Override
@@ -51,26 +60,32 @@ public class MySqlMessagesManager implements MessagesManager {
 	}
 
 	@Override
-	public void sendMessages(UUID uuid, String... messages) {
-		try {
-			String values = "";
-			for (int i = 0; i<messages.length; i++) {
-				if (!values.isEmpty()) values += ",";
-				values += "VALUES (?, ?)";
+	public void sendMessages(final UUID uuid, final String... messages) {
+		Bukkit.getScheduler().runTaskAsynchronously(OfflineMessagePlugin.plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String values = "";
+					for (int i = 0; i<messages.length; i++) {
+						if (!values.isEmpty()) values += ",";
+						values += "VALUES (?, ?)";
+					}
+					PreparedStatement pre = conn.prepareStatement("INSERT INTO " + getPrefix() + "offlinemessage (Player, Message) " + values);
+					int index = 1;
+					for (String message : messages) {
+						pre.setString(index, uuid.toString());
+						index++;
+						pre.setString(index, message);
+					}
+					
+					pre.executeUpdate();
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+
 			}
-			PreparedStatement pre = conn.prepareStatement("INSERT INTO " + getPrefix() + "offlinemessage (Player, Message) " + values);
-			int index = 1;
-			for (String message : messages) {
-				pre.setString(index, uuid.toString());
-				index++;
-				pre.setString(index, message);
-			}
-			
-			pre.executeUpdate();
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		});
 	}
 
 	@Override
@@ -102,15 +117,19 @@ public class MySqlMessagesManager implements MessagesManager {
 	}
 
 	@Override
-	public void resetMessages(UUID uuid) {
-		try {
-			PreparedStatement pre = conn.prepareStatement("DELETE FROM " + getPrefix() + "offlinemessage WHERE Player = ?");
-			pre.setString(1, uuid.toString());
-			pre.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			
-		}
+	public void resetMessages(final UUID uuid) {
+		Bukkit.getScheduler().runTaskAsynchronously(OfflineMessagePlugin.plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					PreparedStatement pre = conn.prepareStatement("DELETE FROM " + getPrefix() + "offlinemessage WHERE Player = ?");
+					pre.setString(1, uuid.toString());
+					pre.executeUpdate();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -135,6 +154,11 @@ public class MySqlMessagesManager implements MessagesManager {
 	 */
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
+	}
+
+	@Override
+	public boolean isAsync() {
+		return true;
 	}
 
 }

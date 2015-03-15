@@ -80,4 +80,9 @@ public class ConfigMessagesManager implements MessagesManager {
 		return "Config";
 	}
 
+	@Override
+	public boolean isAsync() {
+		return false;
+	}
+
 }
