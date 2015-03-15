@@ -48,7 +48,7 @@ public class OfflineMessagePlugin extends JavaPlugin implements Listener {
 	/**
 	 * @return the messages manager
 	 */
-	public MessagesManager getMessagesManager() {
+	public static MessagesManager getMessagesManager() {
 		return messagesmanager;
 	}
 
@@ -56,7 +56,7 @@ public class OfflineMessagePlugin extends JavaPlugin implements Listener {
 	 * @param messagesmanager
 	 *            the messages manager to set
 	 */
-	public void setMessagesManager(MessagesManager messagesmanager) {
+	public static void setMessagesManager(MessagesManager messagesmanager) {
 		if (messagesmanager == null) {
 			throw new NullPointerException("messagesmanager cannot be null!");
 		}
