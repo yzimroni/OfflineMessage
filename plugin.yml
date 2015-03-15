@@ -1,0 +1,6 @@
+name: OfflineMessage
+main: com.yanayzimroni.bukkit.offlinemessage.OfflineMessagePlugin
+version: 0.1
+authors: [yzimroni]
+description: >
+           Allow to you or to other plugins to send message to offline players, when player will join it will recivied the messages.
